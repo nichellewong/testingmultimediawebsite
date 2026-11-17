@@ -18,7 +18,7 @@
 # be public "Anyone with the link". To rebuild site, Actions > "Run workflow"
 content_url = ""
 title = "John Coal Train"
-tagline = "A sentence or two that sets up the story and makes the reader want to scroll."
+tagline = "We are so cool."
 byline = "Nichelle & co."
 date = "today"
 # Short summary used by search engines and social media previews.
