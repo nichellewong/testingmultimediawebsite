@@ -16,7 +16,7 @@
 # Google Doc Link of your content.md file. This is optional. If you don't 
 # set this, it will default to the content.md file on Github. The Doc must
 # be public "Anyone with the link". To rebuild site, Actions > "Run workflow"
-content_url = ""
+content_url = "https://drive.google.com/file/d/1lOvwL9n1o5_o5o0BFZOUGeba2YDCLwN9/view?usp=sharing"
 title = "John Coal Train"
 tagline = "We are so cool."
 byline = "Nichelle & co."
