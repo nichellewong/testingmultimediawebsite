@@ -1,0 +1,22 @@
+{
+  "name": "multimedia-story-template",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A self-contained multimedia story website built from content.md + settings.toml and published to GitHub Pages.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node src/build.js",
+    "start": "node src/dev.js",
+    "dev": "node src/dev.js",
+    "clean": "node -e \"import('node:fs').then(fs=>{fs.rmSync('_site',{recursive:true,force:true});fs.rmSync('.cache',{recursive:true,force:true})})\""
+  },
+  "dependencies": {
+    "markdown-it": "^15.0.3",
+    "sharp": "^0.35.5",
+    "smol-toml": "^1.9.1"
+  }
+}

@@ -1,0 +1,47 @@
+.drawpath {
+  position: relative;
+  height: calc(var(--dp-length, 2) * 100vh);
+}
+.drawpath__sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--dp-bg, var(--text-bg));
+}
+.drawpath__frame {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.drawpath__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.drawpath__track {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.drawpath__card {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--at, 0.5) * (100% - 100vh) + 50vh);
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--page-gutter);
+  pointer-events: auto;
+}
+@media (min-width: 768px) {
+  .drawpath__card[data-position="left"] { justify-content: flex-start; padding-left: 6vw; }
+  .drawpath__card[data-position="right"] { justify-content: flex-end; padding-right: 6vw; }
+}

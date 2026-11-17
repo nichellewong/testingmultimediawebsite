@@ -1,0 +1,170 @@
+# =====================================================================
+#  SETTINGS FOR YOUR STORY
+#
+#  Edit the values on the right of each "=" sign. Keep the quotation
+#  marks around words. Colors are hex codes like "#1a1a1a". Sizes are
+#  CSS lengths like "1.25rem" or "20px". Files are named relative to
+#  the assets/ folder (so "photos/pic.jpg" means assets/photos/pic.jpg).
+#  Lines that start with # are comments and are ignored.
+#
+#  Fonts: every font file in the fonts/ folder is picked up
+#  automatically. Refer to a font by its family name, e.g. "Quattrocento".
+#  See README.md for how to add more Google Fonts.
+# =====================================================================
+
+[site]
+# Google Doc Link of your content.md file. This is optional. If you don't 
+# set this, it will default to the content.md file on Github. The Doc must
+# be public "Anyone with the link". To rebuild site, Actions > "Run workflow"
+content_url = ""
+title = "Your Story Title"
+tagline = "A sentence or two that sets up the story and makes the reader want to scroll."
+byline = "By Your Name"
+date = ""
+# Short summary used by search engines and social media previews.
+description = ""
+language = "en"
+# Optional. The full address where the story will live, used only for
+# social sharing previews, e.g. "https://username.github.io/my-story"
+base_url = ""
+# Optional. Image used for social sharing previews (defaults to the opener image).
+share_image = ""
+# Optional. A small square image shown in the browser tab.
+favicon = ""
+# Small text at the very bottom of the page. Markdown links work here.
+footer = ""
+
+[opener]
+# The full-screen image or video behind the title. Use a .jpg/.png for an
+# image or an .mp4 for a short, silent, looping video. Leave it empty for a
+# solid block of screen_color.
+background = ""
+# background = "hero.jpg"
+# background = "hero-loop.mp4"
+# Still image shown while a background video loads (strongly recommended for video).
+poster = ""
+# Which part of the image stays visible when the screen is narrow:
+# "center", "top", "bottom", "left", "right", or e.g. "30% 60%".
+background_position = "center"
+# A tinted layer between the image and the text, so the text stays readable.
+screen_color = "#000000"
+screen_opacity = 0.45
+# Where the title sits: top-left, top-center, top-right, middle-left,
+# middle-center, middle-right, bottom-left, bottom-center, bottom-right.
+align = "middle-center"
+title_font = "Quattrocento"
+title_size = "5.5rem"
+title_weight = 700
+title_color = "#ffffff"
+# Set to true when the title is already part of the image. The title stays in
+# the HTML for search engines and screen readers but is not displayed.
+hide_title = false
+tagline_font = "Fanwood Text"
+tagline_size = "1.5rem"
+tagline_color = "#ffffff"
+# Soft shadow behind the title text to lift it off the image.
+text_shadow = true
+# Widest the title block may grow. "75vw" is three quarters of the screen.
+max_width = "75vw"
+# "100vh" fills the whole screen. Try "80vh" for a shorter opener.
+height = "100vh"
+scroll_indicator = true
+# Leave empty to match the title color.
+scroll_indicator_color = ""
+# Sound for a background video. The video always starts silent (browsers
+# insist); when audio = true a small button lets the reader turn the sound on.
+audio = false
+# Where the button sits: "top-left", "top-right" or "bottom-center" (above the arrow).
+audio_position = "bottom-center"
+audio_label = "Click for audio"
+audio_label_on = "Mute"
+# true: sound fades out when the reader scrolls past the opener and returns
+# when they scroll back. false: the sound keeps playing through the whole
+# story and the button stays on screen so the reader can mute it any time.
+fade_sound_after_scroll = true
+
+[text]
+font = "Fanwood Text"
+heading_font = "Quattrocento"
+# Small text: captions, byline, dateline, footer, and the text inside
+# timelines and story maps. Usually a sans-serif.
+secondary_font = "Source Sans 3"
+font_size = "1.3rem"
+line_height = 1.6
+color = "#1f1f1f"
+background = "#fffdf9"
+# Leave empty to use the text color.
+heading_color = ""
+link_color = "#0b5fa5"
+# Width of the reading column (roughly 8 to 12 words per line).
+max_width = "40rem"
+paragraph_spacing = "1.3em"
+# Color of the bar beside an indented quotation (leave empty to use link_color).
+blockquote_color = ""
+pullquote_font = "Quattrocento"
+pullquote_size = "2.1rem"
+pullquote_color = ""
+# Bootstrap classes added to every table. Options include table-bordered,
+# table-striped, table-hover, table-sm. Use "table" alone for plain lines.
+table_classes = "table table-bordered"
+
+[embeds]
+# Vertical breathing room above and below every photo, chart, video, etc.
+gutter = "3rem"
+# How much wider than the text column a "large" (default) embed is.
+# 1.5 means one-and-a-half times the text width.
+large_scale = 1.6
+# Leave empty to use secondary_font.
+caption_font = ""
+caption_size = "0.95rem"
+caption_color = "#6b6b6b"
+# Color of pop-up buttons (leave empty to use link_color).
+button_color = ""
+# Embed code may load JavaScript only from these domains. Anything else is
+# stripped out with a warning at build time. Add a domain here if a new
+# service's embed code stops working.
+trusted_script_domains = [
+  "datawrapper.dwcdn.net",
+  "public.flourish.studio",
+  "flo.uri.sh",
+  "e.infogram.com",
+  "infogram.com",
+  "www.google.com",
+  "maps.google.com",
+  "www.gstatic.com",
+  "cdn.knightlab.com",
+  "platform.twitter.com",
+  "platform.x.com",
+  "embed.bsky.app",
+  "www.instagram.com",
+  "www.tiktok.com",
+  "connect.facebook.net",
+  "www.youtube.com",
+  "player.vimeo.com",
+  "w.soundcloud.com",
+  "open.spotify.com",
+  "embed.podcasts.apple.com",
+  "public.tableau.com",
+  "js.arcgis.com",
+  "api.mapbox.com",
+  "www.documentcloud.org",
+  "embed.documentcloud.org",
+  "view.genially.com",
+  "www.canva.com",
+  "embed.reddit.com",
+  "giphy.com",
+  "cdn.jsdelivr.net",
+  "unpkg.com",
+  "cdnjs.cloudflare.com",
+]
+
+[fonts]
+# Font files in the fonts/ folder are detected automatically when they are
+# named like Google Webfonts Helper names them (e.g. lora-v35-latin-700.woff2).
+# For a file with a different name, describe it here (remove the # signs):
+#
+# [[fonts.custom]]
+# family = "My Font"
+# file = "MyFont-Bold.woff2"
+# weight = 700
+# style = "normal"

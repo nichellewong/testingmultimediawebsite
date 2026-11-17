@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hotspots builder</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap.min.css">
+<!-- @site-css -->
+<!-- @embed-style hotspots -->
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; background: #f5f5f3; color: #1f1f1f; }
+  .hs-header { background: #1f1f1f; color: #fff; padding: 1rem 0; margin-bottom: 1.5rem; }
+  .hs-header h1 { font-size: 1.4rem; margin: 0; }
+  .hs-header p { margin: 0.25rem 0 0; opacity: 0.8; font-size: 0.95rem; }
+  .hs-card { background: #fff; border: 1px solid #e3e3e0; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .hs-card h2 { font-size: 1.05rem; font-weight: 700; margin: 0 0 0.75rem; }
+  .hs-drop { border: 2px dashed #bbb; border-radius: 8px; padding: 2rem 1rem; text-align: center; color: #666; cursor: pointer; }
+  .hs-drop.is-over { border-color: #0b5fa5; background: #eef5fb; }
+  .hs-stage-wrap { position: relative; background: #ddd; border-radius: 6px; overflow: hidden; }
+  .hs-stage-wrap .hotspots { cursor: crosshair; }
+  .hs-stage-wrap .hotspots > img { max-height: 72vh; width: 100%; object-fit: contain; background: #222; }
+  .hs-stage-wrap .hotspot { cursor: grab; }
+  .hs-stage-wrap .hotspot.is-selected .hotspot__marker { outline: 3px solid #ffc107; outline-offset: 2px; }
+  .hs-stage-wrap .hotspot.is-dragging { cursor: grabbing; }
+  .hs-hint { font-size: 0.85rem; color: #666; margin-top: 0.5rem; }
+  .hs-list { list-style: none; padding: 0; margin: 0 0 0.75rem; display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .hs-list button { border: 1px solid #ccc; background: #fff; border-radius: 999px; padding: 0.15rem 0.7rem; font-size: 0.85rem; }
+  .hs-list button.is-selected { background: #1f1f1f; color: #fff; border-color: #1f1f1f; }
+  .form-label { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.2rem; }
+  .form-text { font-size: 0.78rem; }
+  textarea.hs-output { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; min-height: 16rem; white-space: pre; }
+  .hs-warn { display: none; }
+  .hs-warn.is-on { display: block; }
+  .hs-info { cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="hs-header">
+  <div class="container-fluid">
+    <h1>Hotspots builder</h1>
+    <p>Load a photo, click to place markers, fill in the details, then copy the code block into your story. Nothing is uploaded: the photo stays in your browser.</p>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="hs-card">
+        <h2>1. The photo</h2>
+        <div id="drop" class="hs-drop">
+          <strong>Click to choose a photo</strong> or drag one here.<br>
+          <span class="form-text">JPG or PNG. Use the same file you will upload to the assets folder.</span>
+          <input id="file" type="file" accept="image/*" hidden>
+        </div>
+        <div id="warn" class="alert alert-warning hs-warn mt-3 mb-0">
+          <strong>This photo is very large</strong> (<span id="dims"></span>). Big files slow the site down on phones.
+          <button type="button" class="btn btn-sm btn-dark ms-2" id="shrink">Download a resized copy (2400 px wide)</button>
+          <button type="button" class="btn btn-sm btn-link hs-info" id="howto" data-bs-toggle="popover" data-bs-html="true" data-bs-placement="bottom" title="Resize it yourself on a Mac" data-bs-content="<ol class='mb-0 ps-3'><li>Open the photo in <strong>Preview</strong>.</li><li>Choose <strong>Tools &gt; Adjust Size…</strong></li><li>Set the unit to <strong>pixels</strong> and type <strong>2400</strong> in Width (keep “Scale proportionally” checked).</li><li>Click <strong>OK</strong>, then <strong>File &gt; Export…</strong>, pick JPEG, and save.</li><li>Upload the new file to the <code>assets</code> folder and use its name below.</li></ol>">
+            <span aria-hidden="true">&#9432;</span> How to resize it yourself
+          </button>
+          <div class="form-text mt-1">After downloading the resized copy, upload <em>that</em> file to your assets folder and use its name as the source.</div>
+        </div>
+        <div id="stage-card" class="mt-3" hidden>
+          <div class="hs-stage-wrap">
+            <div class="hotspots" id="stage"><img id="stage-img" alt=""></div>
+          </div>
+          <div class="hs-hint">Click on the photo to add a marker. Drag a marker to move it. Click a marker to edit it. Hover to preview its info window.</div>
+        </div>
+      </div>
+
+      <div class="hs-card">
+        <h2>4. Your code block</h2>
+        <p class="form-text mb-2">Copy this into your story. In Google Docs, paste it inside a code block (Insert &gt; Building blocks &gt; Code block). In content.md, paste it as is.</p>
+        <textarea id="output" class="form-control hs-output" readonly spellcheck="false"></textarea>
+        <div class="d-flex gap-2 mt-2 flex-wrap">
+          <button type="button" class="btn btn-dark" id="copy">Copy code block</button>
+          <button type="button" class="btn btn-outline-secondary" id="import-toggle">Edit an existing code block…</button>
+          <button type="button" class="btn btn-outline-danger ms-auto" id="reset">Start over</button>
+        </div>
+        <div id="import-box" class="mt-3" hidden>
+          <label class="form-label" for="import">Paste a hotspots code block you made earlier, then load it. You will need to choose the photo again.</label>
+          <textarea id="import" class="form-control hs-output" style="min-height:8rem" spellcheck="false"></textarea>
+          <button type="button" class="btn btn-sm btn-dark mt-2" id="import-go">Load</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="hs-card">
+        <h2>2. Settings for the whole embed</h2>
+        <div class="row g-2">
+          <div class="col-12"><label class="form-label">Photo file name (as uploaded to assets)</label><input class="form-control form-control-sm" data-field="source" placeholder="photo.jpg"></div>
+          <div class="col-12"><label class="form-label">Alt text (describe the photo)</label><input class="form-control form-control-sm" data-field="alt"></div>
+          <div class="col-12"><label class="form-label">Caption</label><input class="form-control form-control-sm" data-field="caption"></div>
+          <div class="col-12"><label class="form-label">Credit</label><input class="form-control form-control-sm" data-field="credit"></div>
+          <div class="col-12"><label class="form-label">Size (for this whole embed)</label><select class="form-select form-select-sm" data-field="size"><option value="">large (default)</option><option value="full">full</option><option value="text">text</option></select></div>
+          <div class="col-6"><label class="form-label">Marker size (px)</label><input class="form-control form-control-sm" type="number" min="12" max="80" data-field="marker_size" placeholder="28"></div>
+          <div class="col-6"><label class="form-label">Marker fill opacity (0 to 1)</label><input class="form-control form-control-sm" type="number" step="0.05" min="0" max="1" data-field="marker_opacity" placeholder="0.35"></div>
+          <div class="col-6"><label class="form-label">Marker fill color</label><input class="form-control form-control-color form-control-sm w-100" type="color" data-field="marker_color" value="#ffffff"></div>
+          <div class="col-6"><label class="form-label">Marker ring color</label><input class="form-control form-control-color form-control-sm w-100" type="color" data-field="marker_border" value="#ffffff"></div>
+          <div class="col-12"><label class="form-label">Custom image for all markers (optional, put in assets folder)</label><input class="form-control form-control-sm" data-field="marker" placeholder="pin.png"></div>
+          <div class="col-12 d-flex gap-3 flex-wrap mt-1">
+            <label class="form-check-label"><input class="form-check-input me-1" type="checkbox" data-field="numbered"> Numbered markers</label>
+            <label class="form-check-label"><input class="form-check-input me-1" type="checkbox" data-field="pulse" checked> Pulse animation</label>
+            <label class="form-check-label"><input class="form-check-input me-1" type="checkbox" data-field="legend"> Legend below photo</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="hs-card">
+        <h2>3. Markers</h2>
+        <ul id="marker-list" class="hs-list"></ul>
+        <div id="marker-form" hidden>
+          <div class="row g-2">
+            <div class="col-6"><label class="form-label">X (%)</label><input class="form-control form-control-sm" type="number" step="0.1" min="0" max="100" data-mfield="x"></div>
+            <div class="col-6"><label class="form-label">Y (%)</label><input class="form-control form-control-sm" type="number" step="0.1" min="0" max="100" data-mfield="y"></div>
+            <div class="col-12"><label class="form-label">Title</label><input class="form-control form-control-sm" data-mfield="title"></div>
+            <div class="col-12"><label class="form-label">Short text (info window)</label><input class="form-control form-control-sm" data-mfield="text"></div>
+            <div class="col-12"><label class="form-label">Thumbnail image on hover (optional, put in assets folder)</label><input class="form-control form-control-sm" data-mfield="thumbnail" placeholder="thumb.jpg"></div>
+            <div class="col-12"><label class="form-label">Custom marker for this spot (optional)</label><input class="form-control form-control-sm" data-mfield="marker" placeholder="pin-red.png"></div>
+            <div class="col-12"><label class="form-label">On click, open…</label>
+              <select class="form-select form-select-sm" data-mfield="detailType">
+                <option value="">Nothing (info window only)</option>
+                <option value="video">A video file</option>
+                <option value="audio">An audio file</option>
+                <option value="image">A photo</option>
+                <option value="iframe">Embed code (YouTube, chart…)</option>
+                <option value="text">Text</option>
+              </select>
+            </div>
+            <div class="col-12" id="detail-file-row"><label class="form-label" id="detail-file-label">File name (in assets)</label><input class="form-control form-control-sm" data-mfield="detail" placeholder="clip.mp4"></div>
+            <div class="col-12" id="detail-poster-row"><label class="form-label">Poster image for the video (optional)</label><input class="form-control form-control-sm" data-mfield="poster" placeholder="clip-poster.jpg"></div>
+            <div class="col-12" id="detail-body-row"><label class="form-label" id="detail-body-label">Embed code</label><textarea class="form-control form-control-sm" rows="4" data-mfield="detailBody"></textarea></div>
+            <div class="col-12" id="detail-title-row"><label class="form-label">Pop-up title (optional, defaults to the marker title)</label><input class="form-control form-control-sm" data-mfield="modal_title"></div>
+          </div>
+          <div class="d-flex gap-2 mt-3">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="m-up" title="Move earlier">&uarr;</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="m-down" title="Move later">&darr;</button>
+            <button type="button" class="btn btn-sm btn-outline-danger ms-auto" id="m-delete">Delete marker</button>
+          </div>
+        </div>
+        <p id="marker-empty" class="form-text mb-0">No markers yet. Load a photo and click on it.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  const STORE = 'hotspots-builder';
+  const DEFAULTS = { source: '', alt: '', caption: '', credit: '', size: '', marker_size: '', marker_color: '#ffffff', marker_opacity: '', marker_border: '#ffffff', marker: '', numbered: false, pulse: true, legend: false, markers: [] };
+  function hexToRgba(hex, alpha) {
+    const m = String(hex).match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    if (!m) return hex;
+    let h = m[1]; if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+    return 'rgba(' + parseInt(h.slice(0, 2), 16) + ',' + parseInt(h.slice(2, 4), 16) + ',' + parseInt(h.slice(4, 6), 16) + ',' + alpha + ')';
+  }
+  let state = JSON.parse(JSON.stringify(DEFAULTS));
+  let imageUrl = '';
+  let selected = -1;
+  const $ = (sel) => document.querySelector(sel);
+  const stage = $('#stage');
+  const stageImg = $('#stage-img');
+  const popovers = [];
+
+  // ---------- persistence
+  function persist() {
+    try {
+      localStorage.setItem(STORE, JSON.stringify({ state, imageUrl: imageUrl.length < 4000000 ? imageUrl : '' }));
+    } catch (e) { /* storage full or blocked: ignore */ }
+  }
+  function restore() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORE) || 'null');
+      if (!saved) return;
+      state = Object.assign(JSON.parse(JSON.stringify(DEFAULTS)), saved.state || {});
+      if (saved.imageUrl) setImage(saved.imageUrl);
+    } catch (e) { /* ignore */ }
+  }
+
+  // ---------- image
+  function setImage(url) {
+    imageUrl = url;
+    stageImg.src = url;
+    $('#stage-card').hidden = false;
+    stageImg.onload = () => {
+      const w = stageImg.naturalWidth, h = stageImg.naturalHeight;
+      $('#dims').textContent = w + ' by ' + h + ' pixels';
+      $('#warn').classList.toggle('is-on', w > 2500 || h > 2500);
+      render();
+    };
+  }
+  function loadFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    if (!state.source) state.source = file.name;
+    const reader = new FileReader();
+    reader.onload = () => { setImage(reader.result); bind(); persist(); };
+    reader.readAsDataURL(file);
+  }
+  const drop = $('#drop');
+  drop.addEventListener('click', () => $('#file').click());
+  $('#file').addEventListener('change', (e) => loadFile(e.target.files[0]));
+  ['dragenter', 'dragover'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('is-over'); }));
+  ['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('is-over'); }));
+  drop.addEventListener('drop', (e) => loadFile(e.dataTransfer.files[0]));
+
+  // Resize in the browser and offer the result as a download.
+  $('#shrink').addEventListener('click', () => {
+    const max = 2400;
+    const w = stageImg.naturalWidth, h = stageImg.naturalHeight;
+    const scale = Math.min(1, max / Math.max(w, h));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(w * scale); canvas.height = Math.round(h * scale);
+    canvas.getContext('2d').drawImage(stageImg, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      const base = (state.source || 'photo').replace(/\.[^.]+$/, '');
+      const name = base + '-web.jpg';
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name; a.click();
+      state.source = name; bind();
+      const reader = new FileReader();
+      reader.onload = () => { setImage(reader.result); persist(); };
+      reader.readAsDataURL(blob);
+    }, 'image/jpeg', 0.86);
+  });
+  new bootstrap.Popover($('#howto'), { trigger: 'click' });
+
+  // ---------- markers on the stage
+  function pct(e) {
+    const r = stageImg.getBoundingClientRect();
+    return { x: Math.min(100, Math.max(0, ((e.clientX - r.left) / r.width) * 100)), y: Math.min(100, Math.max(0, ((e.clientY - r.top) / r.height) * 100)) };
+  }
+  stage.addEventListener('click', (e) => {
+    if (e.target.closest('.hotspot')) return;
+    const p = pct(e);
+    state.markers.push({ x: +p.x.toFixed(1), y: +p.y.toFixed(1), title: '', text: '', thumbnail: '', marker: '', detailType: '', detail: '', poster: '', detailBody: '', modal_title: '' });
+    selected = state.markers.length - 1;
+    render(); bind(); persist();
+    const first = document.querySelector('#marker-form [data-mfield="title"]');
+    if (first) first.focus();
+  });
+
+  function infoHtml(m, n) {
+    const parts = [];
+    if (m.thumbnail) parts.push('<div class="hotspot-popover__thumb" style="height:5rem;background:#ddd;display:flex;align-items:center;justify-content:center;color:#777;font-size:.8rem">' + esc(m.thumbnail) + '</div>');
+    if (m.title) parts.push('<p class="hotspot-popover__title">' + esc(m.title) + '</p>');
+    if (m.text) parts.push('<p class="hotspot-popover__text">' + esc(m.text) + '</p>');
+    if (m.detailType) parts.push('<span class="hotspot-popover__more">Click or tap again for more</span>');
+    return parts.join('') || '<em class="text-muted">Marker ' + n + ' (no title yet)</em>';
+  }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  function render() {
+    popovers.splice(0).forEach((p) => p.dispose());
+    stage.querySelectorAll('.hotspot').forEach((b) => b.remove());
+    stage.style.cssText = '';
+    if (state.marker_size) stage.style.setProperty('--hotspot-size', state.marker_size + 'px');
+    stage.style.setProperty('--hotspot-color', hexToRgba(state.marker_color || '#ffffff', state.marker_opacity === '' ? 0.35 : +state.marker_opacity));
+    if (state.marker_border) stage.style.setProperty('--hotspot-border', state.marker_border);
+    state.markers.forEach((m, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'hotspot' + (state.pulse ? ' hotspot--pulse' : '') + (i === selected ? ' is-selected' : '');
+      b.style.left = m.x + '%'; b.style.top = m.y + '%';
+      const custom = m.marker || state.marker;
+      b.innerHTML = custom ? '<span class="hotspot__marker" title="' + esc(custom) + '">' + (state.numbered ? i + 1 : '&#9670;') + '</span>' : '<span class="hotspot__marker">' + (state.numbered ? i + 1 : '') + '</span>';
+      b.dataset.index = i;
+      stage.appendChild(b);
+      popovers.push(new bootstrap.Popover(b, { html: true, sanitize: false, content: infoHtml(m, i + 1), trigger: 'hover', placement: 'auto', customClass: 'hotspot-popover', container: 'body' }));
+      attachDrag(b, i);
+    });
+    renderList();
+    renderForm();
+    $('#output').value = toBlock(state);
+  }
+
+  function attachDrag(btn, i) {
+    let moved = false, startX = 0, startY = 0;
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault(); btn.setPointerCapture(e.pointerId);
+      moved = false; startX = e.clientX; startY = e.clientY;
+      btn.classList.add('is-dragging');
+      const move = (ev) => {
+        if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) > 3) moved = true;
+        if (!moved) return;
+        const p = pct(ev);
+        state.markers[i].x = +p.x.toFixed(1); state.markers[i].y = +p.y.toFixed(1);
+        btn.style.left = state.markers[i].x + '%'; btn.style.top = state.markers[i].y + '%';
+      };
+      const up = () => {
+        btn.removeEventListener('pointermove', move); btn.removeEventListener('pointerup', up);
+        btn.classList.remove('is-dragging');
+        selected = i;
+        render(); bind(); persist();
+      };
+      btn.addEventListener('pointermove', move);
+      btn.addEventListener('pointerup', up);
+    });
+    btn.addEventListener('click', (e) => { e.stopPropagation(); });
+  }
+
+  // ---------- side panel
+  function renderList() {
+    const ul = $('#marker-list');
+    ul.innerHTML = '';
+    state.markers.forEach((m, i) => {
+      const li = document.createElement('li');
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = (i + 1) + '. ' + (m.title || 'untitled');
+      b.className = i === selected ? 'is-selected' : '';
+      b.addEventListener('click', () => { selected = i; render(); bind(); });
+      li.appendChild(b); ul.appendChild(li);
+    });
+    $('#marker-empty').hidden = state.markers.length > 0;
+    $('#marker-form').hidden = selected < 0 || selected >= state.markers.length;
+  }
+  function renderForm() {
+    const m = state.markers[selected];
+    if (!m) return;
+    document.querySelectorAll('#marker-form [data-mfield]').forEach((el) => { el.value = m[el.dataset.mfield] ?? ''; });
+    const t = m.detailType;
+    $('#detail-file-row').hidden = !(t === 'video' || t === 'audio' || t === 'image');
+    $('#detail-poster-row').hidden = t !== 'video';
+    $('#detail-body-row').hidden = !(t === 'iframe' || t === 'text');
+    $('#detail-title-row').hidden = !t;
+    $('#detail-file-label').textContent = t === 'image' ? 'Photo file name (in assets)' : t === 'audio' ? 'Audio file name (in assets)' : 'Video file name (in assets)';
+    $('#detail-body-label').textContent = t === 'text' ? 'Text (Markdown works)' : 'Embed code';
+  }
+  function bind() {
+    document.querySelectorAll('[data-field]').forEach((el) => {
+      const k = el.dataset.field;
+      if (el.type === 'checkbox') el.checked = !!state[k]; else el.value = state[k] ?? '';
+    });
+  }
+  document.querySelectorAll('[data-field]').forEach((el) => {
+    el.addEventListener('input', () => {
+      state[el.dataset.field] = el.type === 'checkbox' ? el.checked : el.value;
+      render(); persist();
+    });
+  });
+  document.querySelectorAll('#marker-form [data-mfield]').forEach((el) => {
+    el.addEventListener('input', () => {
+      const m = state.markers[selected]; if (!m) return;
+      m[el.dataset.mfield] = el.type === 'number' ? +el.value : el.value;
+      if (el.dataset.mfield === 'detailType') renderForm();
+      // Keep typing smooth: only redraw the stage for position/title changes.
+      if (['x', 'y', 'title', 'text', 'thumbnail', 'marker', 'detailType'].includes(el.dataset.mfield)) {
+        const active = document.activeElement; render(); if (active && active.focus) active.focus();
+      } else { $('#output').value = toBlock(state); }
+      persist();
+    });
+  });
+  $('#m-delete').addEventListener('click', () => { state.markers.splice(selected, 1); selected = Math.min(selected, state.markers.length - 1); render(); persist(); });
+  $('#m-up').addEventListener('click', () => { if (selected > 0) { const a = state.markers; [a[selected - 1], a[selected]] = [a[selected], a[selected - 1]]; selected--; render(); persist(); } });
+  $('#m-down').addEventListener('click', () => { if (selected < state.markers.length - 1) { const a = state.markers; [a[selected + 1], a[selected]] = [a[selected], a[selected + 1]]; selected++; render(); persist(); } });
+
+  // ---------- code block out / in
+  function line(k, v) { return v !== '' && v !== undefined && v !== null && v !== false ? k + ': ' + String(v).replace(/\s*\n\s*/g, ' ') : null; }
+  function toBlock(s) {
+    const head = ['embed: hotspots', line('source', s.source || 'photo.jpg'), line('alt', s.alt), line('caption', s.caption), line('credit', s.credit), line('size', s.size), line('marker_size', s.marker_size), line('marker_color', s.marker_color.toLowerCase() === '#ffffff' ? '' : s.marker_color), line('marker_opacity', s.marker_opacity), line('marker_border', s.marker_border.toLowerCase() === '#ffffff' ? '' : s.marker_border), line('marker', s.marker), s.numbered ? 'numbered: true' : null, s.pulse ? null : 'pulse: false', s.legend ? 'legend: true' : null].filter(Boolean);
+    const blocks = s.markers.map((m) => {
+      const l = [line('x', m.x), line('y', m.y), line('title', m.title), line('text', m.text), line('thumbnail', m.thumbnail), line('marker', m.marker), line('modal_title', m.modal_title)];
+      if (m.detailType === 'video') { l.push(line('video', m.detail)); l.push(line('poster', m.poster)); }
+      if (m.detailType === 'audio') l.push(line('audio', m.detail));
+      if (m.detailType === 'image') l.push(line('image', m.detail));
+      let body = '';
+      if (m.detailType === 'iframe' || m.detailType === 'text') body = (m.detailBody || '').trim();
+      return l.filter(Boolean).join('\n') + (body ? '\n\n' + body : '');
+    });
+    return '```\n' + head.join('\n') + '\n' + blocks.map((b) => '\n---\n' + b).join('\n') + '\n```';
+  }
+  function parseChunk(chunk) {
+    const lines = chunk.replace(/\r/g, '').split('\n');
+    let i = 0; while (i < lines.length && !lines[i].trim()) i++;
+    const o = {};
+    for (; i < lines.length; i++) { const m = lines[i].match(/^([a-z][a-z0-9_-]*):(?:[ \t]+(.*))?$/); if (!m) break; o[m[1].replace(/-/g, '_')] = (m[2] || '').trim(); }
+    while (i < lines.length && !lines[i].trim()) i++;
+    return { o, body: lines.slice(i).join('\n').trim() };
+  }
+  function fromBlock(text) {
+    const clean = text.replace(/^\s*```[^\n]*\n?/, '').replace(/\n?```\s*$/, '');
+    const chunks = clean.split(/^\s*-{3,}\s*$/m);
+    const head = parseChunk(chunks[0]).o;
+    const s = JSON.parse(JSON.stringify(DEFAULTS));
+    ['source', 'alt', 'caption', 'credit', 'size', 'marker_size', 'marker_opacity', 'marker'].forEach((k) => { if (head[k]) s[k] = head[k]; });
+    ['marker_color', 'marker_border'].forEach((k) => { if (/^#[0-9a-f]{6}$/i.test(head[k] || '')) s[k] = head[k]; });
+    s.numbered = /^(true|yes)$/i.test(head.numbered || ''); s.pulse = !/^(false|no)$/i.test(head.pulse || ''); s.legend = /^(true|yes)$/i.test(head.legend || '');
+    chunks.slice(1).forEach((c) => {
+      const { o, body } = parseChunk(c);
+      if (o.x === undefined || o.y === undefined) return;
+      const m = { x: +o.x, y: +o.y, title: o.title || '', text: o.text || '', thumbnail: o.thumbnail || '', marker: o.marker || '', detailType: '', detail: '', poster: o.poster || '', detailBody: '', modal_title: o.modal_title || '' };
+      if (o.video) { m.detailType = 'video'; m.detail = o.video; }
+      else if (o.audio) { m.detailType = 'audio'; m.detail = o.audio; }
+      else if (o.image) { m.detailType = 'image'; m.detail = o.image; }
+      else if (body) { m.detailType = body.startsWith('<') ? 'iframe' : 'text'; m.detailBody = body; }
+      s.markers.push(m);
+    });
+    return s;
+  }
+  $('#copy').addEventListener('click', () => {
+    navigator.clipboard.writeText($('#output').value).then(() => { $('#copy').textContent = 'Copied!'; setTimeout(() => { $('#copy').textContent = 'Copy code block'; }, 1500); });
+  });
+  $('#import-toggle').addEventListener('click', () => { $('#import-box').hidden = !$('#import-box').hidden; });
+  $('#import-go').addEventListener('click', () => {
+    try { state = fromBlock($('#import').value); selected = state.markers.length ? 0 : -1; render(); bind(); persist(); $('#import-box').hidden = true; if (!imageUrl) alert('Loaded ' + state.markers.length + ' marker(s). Now choose the photo so you can see them.'); }
+    catch (e) { alert('That does not look like a hotspots code block.'); }
+  });
+  $('#reset').addEventListener('click', () => {
+    if (!confirm('Clear the photo and all markers?')) return;
+    state = JSON.parse(JSON.stringify(DEFAULTS)); imageUrl = ''; selected = -1;
+    stageImg.removeAttribute('src'); $('#stage-card').hidden = true; $('#warn').classList.remove('is-on');
+    localStorage.removeItem(STORE); render(); bind();
+  });
+
+  restore(); bind(); render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+.audio-player {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.audio-player__body { padding: 1rem 1.25rem; }
+.audio-player__image { display: block; width: 100%; height: auto; }
+.audio-player__title {
+  font-family: var(--font-secondary);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+.audio-player audio { display: block; width: 100%; }
+.story-embed--float .audio-player__body { padding: 0.6rem 0.75rem; }

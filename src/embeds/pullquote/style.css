@@ -1,0 +1,20 @@
+.pullquote {
+  font-family: var(--pullquote-font);
+  font-size: min(var(--pullquote-size), 7vw);
+  line-height: 1.3;
+  color: var(--pullquote-color);
+  text-align: center;
+  margin: 0;
+  padding: 0 var(--page-gutter);
+  text-wrap: balance;
+}
+.pullquote p { margin: 0; }
+.pullquote p::before { content: "\201C"; }
+.pullquote p::after { content: "\201D"; }
+.pullquote__cite {
+  font-family: var(--font-body);
+  font-size: var(--text-size);
+  color: var(--caption-color);
+  margin-top: 0.75em;
+}
+.pullquote__cite::before { content: "\2014 "; }

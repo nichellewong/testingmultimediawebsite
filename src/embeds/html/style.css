@@ -1,0 +1,23 @@
+/* lock_scroll: the frame ignores the mouse until the reader clicks. */
+.story-embed--lock .story-embed__media { position: relative; }
+.story-embed--lock .story-embed__media iframe { pointer-events: none; }
+.story-embed--lock.is-active .story-embed__media iframe { pointer-events: auto; }
+.story-lock__hint {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font: 600 0.85rem/1 var(--font-secondary, sans-serif);
+  padding: 0.55rem 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.story-embed--lock:hover .story-lock__hint { opacity: 1; }
+.story-embed--lock.is-active .story-lock__hint { opacity: 0; }
+@media (hover: none) { .story-embed--lock .story-lock__hint { opacity: 1; } }

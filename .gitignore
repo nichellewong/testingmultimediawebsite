@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+
+# Build output and image cache (regenerated on every build)
+_site/
+.cache/
+
+# Raw sample media kept for local testing only (copies live in assets/)
+sample-assets/

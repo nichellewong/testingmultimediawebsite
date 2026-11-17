@@ -1,0 +1,22 @@
+{
+  "name": "Multimedia story template",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
+  "postCreateCommand": "npm install",
+  "postAttachCommand": "npm start",
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "Story preview",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["tamasfe.even-better-toml", "yzhang.markdown-all-in-one"],
+      "settings": {
+        "editor.wordWrap": "on",
+        "files.autoSave": "afterDelay"
+      }
+    }
+  }
+}

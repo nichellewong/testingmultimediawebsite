@@ -1,0 +1,142 @@
+# Builds the story and publishes it to GitHub Pages.
+#
+# Runs automatically every time you push to the "main" branch (that includes
+# editing a file in the GitHub web interface and clicking "Commit changes").
+# You can also run it by hand from the Actions tab ("Run workflow").
+#
+# The template repository itself works differently: its "main" branch is the
+# blank starting point, and its "demo" branch holds the sample story. There,
+# this workflow merges main into demo (so the demo picks up every improvement)
+# and publishes the demo branch instead. Student copies never do that.
+
+name: Build and deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main, demo]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  # Marks the original template repository. Copies made with "Use this
+  # template" have a different name and are not marked as templates.
+  TEMPLATE_REPO: jrue/multimedia-template-2027
+
+jobs:
+  # ---------------------------------------------------------------- students
+  build:
+    if: ${{ github.event.repository.is_template != true && github.repository != 'jrue/multimedia-template-2027' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install build dependencies
+        run: npm ci
+
+      - name: Build the site
+        run: npm run build
+
+      # When the story is read from a Google Doc ([site] content_url), the
+      # downloaded copy is saved as content.remote.md (and pasted pictures as
+      # assets/pasted/*) and committed here so it stays the fallback for
+      # future builds.
+      - name: Save the downloaded Google Doc copy
+        run: |
+          if [ -f content.remote.md ]; then git add content.remote.md; fi
+          if [ -d assets/pasted ]; then git add --all assets/pasted; fi
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Update story from Google Doc"
+            git push
+          fi
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+        with:
+          # Turns on GitHub Pages for this repository automatically, so you do
+          # not have to visit Settings > Pages yourself.
+          enablement: true
+
+      - name: Upload the built site
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+
+  # ------------------------------------------------- template repository only
+  demo:
+    if: ${{ github.event.repository.is_template == true || github.repository == 'jrue/multimedia-template-2027' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the demo branch
+        uses: actions/checkout@v7
+        with:
+          ref: demo
+          fetch-depth: 0
+
+      - name: Merge main into demo
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git merge --no-edit origin/main
+          git push
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install build dependencies
+        run: npm ci
+
+      - name: Build the demo
+        run: npm run build
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+        with:
+          enablement: true
+
+      - name: Upload the built demo
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy-demo:
+    needs: demo
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the demo to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

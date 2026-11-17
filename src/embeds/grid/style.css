@@ -1,0 +1,26 @@
+.story-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols, 2), minmax(0, 1fr));
+  gap: var(--grid-gap, 1rem);
+  padding-inline: var(--page-gutter);
+}
+@media (min-width: 768px) { .story-embed:not(.story-embed--full) .story-grid { padding-inline: 0; } }
+.story-grid__cell { min-width: 0; }
+/* Embeds inside a cell fill the cell instead of using their own size. */
+.story-grid__cell > .story-embed,
+.story-grid__cell > .story-text { max-width: none; width: 100%; margin: 0; padding: 0; float: none; }
+.story-grid__cell .story-embed__caption { padding-inline: 0; font-size: calc(var(--caption-size) * 0.95); }
+.story-grid__cell .story-text { margin: 0; }
+/* Same shape for every photo and video in the grid. */
+.story-grid--aspect .story-grid__cell .story-embed__media img,
+.story-grid--aspect .story-grid__cell .story-embed__media video,
+.story-grid--aspect .story-grid__cell .audio-player__image {
+  aspect-ratio: var(--grid-aspect);
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+@media (max-width: 767px) {
+  .story-grid { grid-template-columns: 1fr; }
+  .story-grid[style*="--grid-cols:4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

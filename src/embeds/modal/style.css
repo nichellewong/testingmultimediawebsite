@@ -1,0 +1,18 @@
+.story-modal-trigger { margin-bottom: var(--paragraph-spacing); }
+.story-modal .modal-content { background: #111; color: #fff; border: 0; }
+.story-modal .modal-header { border-bottom: 0; padding: 1rem 1.25rem 0.5rem; }
+.story-modal .modal-title { color: #fff; font-family: var(--font-heading); }
+.story-modal .story-modal__header--bare { position: absolute; right: 0; top: 0; z-index: 2; padding: 0.75rem; }
+.story-modal .btn-close { filter: invert(1) grayscale(1); opacity: 0.9; }
+.story-modal .modal-body { padding: 0.5rem 1.25rem 1.25rem; }
+.story-modal .story-modal__header--bare + .modal-body { padding-top: 1.25rem; }
+.story-modal .modal-body .ratio { background: #000; }
+.story-modal .modal-body .ratio > video,
+.story-modal .modal-body .ratio > iframe { width: 100%; height: 100%; object-fit: contain; }
+.story-modal .modal-body > video,
+.story-modal .modal-body > img { display: block; width: 100%; height: auto; max-height: 80vh; object-fit: contain; background: #000; }
+.story-modal .modal-dialog-centered { min-height: calc(100% - 2rem); }
+.story-modal .story-modal__text { padding: 1.25rem; font-family: var(--font-body); font-size: 1.1rem; line-height: 1.6; }
+.story-modal .story-modal__text > :last-child { margin-bottom: 0; }
+.story-modal .story-modal__text audio { display: block; width: 100%; }
+.story-modal .story-modal__text a { color: #9cf; }

@@ -1,0 +1,4 @@
+.storymap-embed { width: 100%; }
+.vco-storymap { font-family: var(--font-secondary) !important; }
+.vco-storymap h1, .vco-storymap h2, .vco-storymap h3,
+.vco-storymap .vco-headline { font-family: var(--font-heading) !important; }

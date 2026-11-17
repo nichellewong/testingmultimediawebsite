@@ -1,0 +1,32 @@
+/* ==========================================================
+   custom.css: your own styles.
+
+   Anything you write here is loaded after the template's styles,
+   so it wins. Give an embed a name with "class: something" or
+   "id: something" in content.md, then style it below.
+
+   Useful hooks inside every embed:
+     .story-embed            the whole wrapper (figure or section)
+     .story-embed__media     the box holding the photo, chart, video...
+     .story-embed__caption   the caption line
+     .story-embed__credit    the credit inside the caption
+     img, video, iframe      the media itself
+
+   For example, with "class: framed" on an image embed:
+   ========================================================== */
+
+.framed img {
+  border: 12px solid #ffffff;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+}
+
+.framed .story-embed__caption {
+  text-align: center;
+}
+
+/* Rules can respond to screen size too. */
+@media (max-width: 767px) {
+  .framed img {
+    border-width: 6px;
+  }
+}
